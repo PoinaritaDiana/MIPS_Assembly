@@ -1,0 +1,96 @@
+.data
+    n: .word 5
+    v: .word 5, 1, 8, -4, 3
+    sp: .asciiz " "
+.text
+main:
+lw $t0, n
+sub $sp, $sp, 4
+sw $t0, 0($sp)
+la $t1, v 
+sub $sp, $sp, 4
+sw $t1, 0($sp)
+jal modifica
+add $sp, $sp, 8
+
+li $t2, 0 #indice
+li $t3, 0 #locatia din memorie
+for:
+bge $t2, $t0, exitmain
+lw $a0, v($t3)
+li $v0,1
+syscall
+la $a0, sp
+li $v0, 4
+syscall
+add $t2, $t2, 1
+add $t3, $t3, 4
+j for
+
+exitmain:
+li $v0, 10
+syscall
+ 
+modifica:
+sub $sp, $sp, 4
+sw $fp, 0($sp)
+add $fp, $sp, 4
+sub $sp, $sp, 4
+sw $ra, 0($sp)
+sub $sp, $sp, 4
+sw $s0, 0($sp)
+sub $sp, $sp, 4
+sw $s1, 0($sp)
+lw $s0, 0($fp) #v
+lw $s1, 4($fp) #n
+beqz $s1, exit #daca n==0: exit
+lw $t4, 0($s0) #$t4=elementul curent din vector
+li $t5, 0 #suma patratelor
+sub $sp, $sp, 4
+sw $t4, 0($sp)
+jal suma_patrate
+add $sp, $sp, 4
+move $t4, $v0
+sw $t4, 0($s0)
+add $s0, $s0, 4
+add $s1, $s1, -1
+sub $sp, $sp, 4
+sw $s1, 0($sp)
+sub $sp, $sp, 4
+sw $s0, 0($sp)
+jal modifica
+add $sp, $sp, 8
+exit:
+lw $s1, -16($fp)
+lw $s0, -12($fp)
+lw $ra, -8($fp)
+lw $fp, -4($fp)
+add $sp, $sp, 16
+jr $ra
+
+suma_patrate:
+sub $sp, $sp, 4
+sw $fp, 0($sp)
+add $fp, $sp, 4
+sub $sp, $sp, 4
+sw $ra, 0($sp)
+sub $sp, $sp, 4
+sw $s0, 0($sp)
+lw $s0, 0($fp) #x
+ble $s0, $0, exitsp
+sub $s0, $s0, 1
+mul $t6, $s0, $s0
+add $t5, $t5, $t6
+sub $sp, $sp, 4
+sw $s0, 0($sp)
+jal suma_patrate
+add $sp, $sp, 4
+
+exitsp:
+move $v0, $t5
+lw $s0, -12($fp)
+lw $ra, -8($fp)
+lw $fp, -4($fp)
+add $sp, $sp, 12
+jr $ra
+
